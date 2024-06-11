@@ -1,17 +1,16 @@
 package main
 
 import (
+	"learn-go-fiber/route"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
 	app := fiber.New()
 
-	app.Get("/", func(ctx *fiber.Ctx) error {
-		return ctx.JSON(fiber.Map {
-			"message": "Hello World",
-		})
-	})
+	// Initialize route
+	route.RouteInit(app)
 
 	app.Listen(":3000")
 }
