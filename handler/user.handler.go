@@ -4,7 +4,6 @@ import (
 	"learn-go-fiber/database"
 	"learn-go-fiber/model/entity"
 	"learn-go-fiber/model/request"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,7 +13,10 @@ func UserHandlerGetAll(ctx *fiber.Ctx) error {
 
 	result := database.DB.Find(&users)
 	if result.Error != nil {
-		log.Fatal(result.Error)
+		return ctx.Status(500).JSON(fiber.Map{
+			"message": "Failed to retrieve users",
+			"error":   result.Error.Error(),
+		})
 	}
 
 	return ctx.JSON(users)
@@ -39,7 +41,8 @@ func UserHandlerCreate(ctx *fiber.Ctx) error {
 	errCreateUser := database.DB.Create(&newUser).Error
 	if errCreateUser != nil {
 		return ctx.Status(500).JSON(fiber.Map{
-			"message": errCreateUser.Error(),
+			"message": "Failed to create user",
+			"error":   errCreateUser.Error(),
 		})
 	}
 
