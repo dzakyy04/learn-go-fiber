@@ -5,6 +5,7 @@ import (
 	"learn-go-fiber/model/entity"
 	"learn-go-fiber/model/request"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -28,6 +29,15 @@ func UserHandlerCreate(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(fiber.Map{
 			"message": "Failed to parse request body",
 			"error":   err.Error(),
+		})
+	}
+
+	var validate = validator.New()
+	errValidate := validate.Struct(user)
+	if errValidate != nil {
+		return ctx.Status(400).JSON(fiber.Map{
+			"message": "Failed to validate request body",
+			"error":   errValidate.Error(),
 		})
 	}
 
