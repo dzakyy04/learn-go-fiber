@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 func UserHandlerGetAll(ctx *fiber.Ctx) error {
@@ -28,6 +29,32 @@ func UserHandlerGetAll(ctx *fiber.Ctx) error {
 	})
 }
 
+func UserHandlerGetById(ctx *fiber.Ctx) error {
+	userId := ctx.Params("id")
+
+	var user entity.User
+	err := database.DB.First(&user, userId).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ctx.Status(404).JSON(fiber.Map{
+				"status":  "error",
+				"message": "User not found",
+				"error":   err.Error(),
+			})
+		}
+		return ctx.Status(500).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Failed to retrieve user",
+			"error":   err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"status":  "success",
+		"message": "User retrieved successfully",
+		"data":    user,
+	})
+}
 func UserHandlerCreate(ctx *fiber.Ctx) error {
 	user := new(request.UserCreateRequest)
 	if err := ctx.BodyParser(user); err != nil {
