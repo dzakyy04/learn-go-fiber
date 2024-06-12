@@ -152,3 +152,65 @@ func UserHandlerUpdate(ctx *fiber.Ctx) error {
 		"data":    user,
 	})
 }
+
+func UserHandlerUpdateEmail(ctx *fiber.Ctx) error {
+	userRequest := new(request.UserUpdateEmailRequest)
+	if err := ctx.BodyParser(userRequest); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to parse request body",
+			"error":   err.Error(),
+		})
+	}
+
+	userId := ctx.Params("id")
+	var user entity.User
+
+	err := database.DB.First(&user, userId).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ctx.Status(404).JSON(fiber.Map{
+				"status":  "error",
+				"message": "User not found",
+				"error":   err.Error(),
+			})
+		}
+		return ctx.Status(500).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Failed to retrieve user",
+			"error":   err.Error(),
+		})
+	}
+
+	if userRequest.Email != "" {
+		var existingUser entity.User
+		if err := database.DB.Where("email = ?", userRequest.Email).First(&existingUser).Error; err == nil {
+			return ctx.Status(400).JSON(fiber.Map{
+				"success": false,
+				"message": "Email already exists",
+			})
+		} else if err != gorm.ErrRecordNotFound {
+			return ctx.Status(500).JSON(fiber.Map{
+				"success": false,
+				"message": "Failed to check existing email",
+				"error":   err.Error(),
+			})
+		}
+		user.Email = userRequest.Email
+	}
+
+	errUpdateUser := database.DB.Save(&user).Error
+	if errUpdateUser != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to update email",
+			"error":   errUpdateUser.Error(),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"success": true,
+		"message": "Email updated successfully",
+		"data":    user,
+	})
+}

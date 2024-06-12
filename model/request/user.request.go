@@ -15,3 +15,8 @@ type UserUpdateRequest struct {
 	Phone     string    `json:"phone"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type UserUpdateEmailRequest struct {
+	Email     string    `json:"email" validate:"required,email"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
