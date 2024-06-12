@@ -214,3 +214,37 @@ func UserHandlerUpdateEmail(ctx *fiber.Ctx) error {
 		"data":    user,
 	})
 }
+
+func UserHandlerDelete(ctx *fiber.Ctx) error {
+	userId := ctx.Params("id")
+	var user entity.User
+	err := database.DB.First(&user, userId).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ctx.Status(404).JSON(fiber.Map{
+				"status":  "error",
+				"message": "User not found",
+				"error":   err.Error(),
+			})
+		}
+		return ctx.Status(500).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Failed to retrieve user",
+			"error":   err.Error(),
+		})
+	}
+
+	errDeleteUser := database.DB.Delete(&user).Error
+	if errDeleteUser != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to delete user",
+			"error":   errDeleteUser.Error(),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"success": true,
+		"message": "User deleted successfully",
+	})
+}
