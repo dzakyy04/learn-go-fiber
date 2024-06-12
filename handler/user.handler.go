@@ -97,3 +97,58 @@ func UserHandlerCreate(ctx *fiber.Ctx) error {
 		"data":    newUser,
 	})
 }
+
+func UserHandlerUpdate(ctx *fiber.Ctx) error {
+	userRequest := new(request.UserUpdateRequest)
+	if err := ctx.BodyParser(userRequest); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to parse request body",
+			"error":   err.Error(),
+		})
+	}
+
+	userId := ctx.Params("id")
+	var user entity.User
+
+	err := database.DB.First(&user, userId).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ctx.Status(404).JSON(fiber.Map{
+				"status":  "error",
+				"message": "User not found",
+				"error":   err.Error(),
+			})
+		}
+		return ctx.Status(500).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Failed to retrieve user",
+			"error":   err.Error(),
+		})
+	}
+
+	if userRequest.Name != "" {
+		user.Name = userRequest.Name
+	}
+	if userRequest.Address != "" {
+		user.Address = userRequest.Address
+	}
+	if userRequest.Phone != "" {
+		user.Phone = userRequest.Phone
+	}
+
+	errUpdateUser := database.DB.Save(&user).Error
+	if errUpdateUser != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to update user",
+			"error":   errUpdateUser.Error(),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"success": true,
+		"message": "User updated successfully",
+		"data":    user,
+	})
+}
