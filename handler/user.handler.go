@@ -4,6 +4,7 @@ import (
 	"learn-go-fiber/database"
 	"learn-go-fiber/model/entity"
 	"learn-go-fiber/model/request"
+	"learn-go-fiber/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -76,11 +77,22 @@ func UserHandlerCreate(ctx *fiber.Ctx) error {
 	}
 
 	newUser := entity.User{
-		Name:    user.Name,
-		Email:   user.Email,
-		Address: user.Address,
-		Phone:   user.Phone,
+		Name:     user.Name,
+		Email:    user.Email,
+		Address:  user.Address,
+		Phone:    user.Phone,
 	}
+
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to hash password",
+			"error":   err.Error(),
+		})
+	}
+
+	newUser.Password = hashedPassword
 
 	errCreateUser := database.DB.Create(&newUser).Error
 	if errCreateUser != nil {

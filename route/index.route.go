@@ -11,6 +11,10 @@ func RouteInit(r *fiber.App) {
 	// Static asset
 	r.Static("/public", config.ProjectRootPath+"/public")
 
+	// Auth
+	r.Post("/login", handler.LoginHandler)
+
+	// User
 	r.Get("/user", handler.UserHandlerGetAll)
 	r.Get("/user/:id", handler.UserHandlerGetById)
 	r.Post("/user", handler.UserHandlerCreate)
