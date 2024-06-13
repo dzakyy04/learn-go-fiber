@@ -5,9 +5,11 @@ import (
 	"learn-go-fiber/model/entity"
 	"learn-go-fiber/model/request"
 	"learn-go-fiber/utils"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
@@ -61,11 +63,27 @@ func LoginHandler(ctx *fiber.Ctx) error {
 		})
 	}
 
+	// Generate jwt
+	claims := jwt.MapClaims{}
+	claims["name"] = user.Name
+	claims["email"] = user.Email
+	claims["address"] = user.Address
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+	token, errGenerateTokem := utils.GenerateToken(&claims)
+	if errGenerateTokem != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to generate token",
+			"error":   errGenerateTokem.Error(),
+		})
+	}
+
 	// Return token
 	return ctx.JSON(fiber.Map{
 		"success": true,
 		"message": "User logged in successfully",
-		"token":   "token",
+		"token":   token,
 		"data":    user,
 	})
 }
