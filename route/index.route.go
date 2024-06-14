@@ -14,6 +14,7 @@ func RouteInit(route *fiber.App) {
 
 	// Auth
 	route.Post("/login", handler.LoginHandler)
+	route.Get("/me", middleware.AuthMiddleware, handler.GetUserDataHandler)
 
 	// User
 	userGroup := route.Group("/user", middleware.AuthMiddleware)

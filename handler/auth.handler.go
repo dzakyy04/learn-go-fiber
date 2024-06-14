@@ -64,11 +64,11 @@ func LoginHandler(ctx *fiber.Ctx) error {
 	}
 
 	// Generate jwt
-	claims := jwt.MapClaims{}
-	claims["name"] = user.Name
-	claims["email"] = user.Email
-	claims["address"] = user.Address
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	claims := jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"iat":     time.Now().Unix(),
+	}
 
 	token, errGenerateTokem := utils.GenerateToken(&claims)
 	if errGenerateTokem != nil {
@@ -84,6 +84,28 @@ func LoginHandler(ctx *fiber.Ctx) error {
 		"success": true,
 		"message": "User logged in successfully",
 		"token":   token,
+		"data":    user,
+	})
+}
+
+func GetUserDataHandler(ctx *fiber.Ctx) error {
+	// Get user_id claims from context
+	userID := ctx.Locals("user_id").(uint)
+
+	// Find user from database
+	var user entity.User
+	err := database.DB.First(&user, userID).Error
+	if err != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": "Internal server error",
+			"error":   err.Error(),
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"message": "User data retrieved successfully",
 		"data":    user,
 	})
 }
