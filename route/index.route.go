@@ -17,11 +17,13 @@ func RouteInit(route *fiber.App) {
 	route.Get("/me", middleware.AuthMiddleware, handler.GetUserDataHandler)
 
 	// User
-	userGroup := route.Group("/user", middleware.AuthMiddleware)
-	userGroup.Get("/", handler.UserHandlerGetAll)
-	userGroup.Get("/:id", handler.UserHandlerGetById)
-	userGroup.Post("/", handler.UserHandlerCreate)
-	userGroup.Put("/:id", handler.UserHandlerUpdate)
-	userGroup.Put("/:id/email", handler.UserHandlerUpdateEmail)
-	userGroup.Delete("/:id", handler.UserHandlerDelete)
+	route.Get("/user/", handler.UserHandlerGetAll)
+	route.Get("/user/:id", handler.UserHandlerGetById)
+	route.Post("/user/", handler.UserHandlerCreate)
+	route.Put("/user/:id", handler.UserHandlerUpdate)
+	route.Put("/user/:id/email", handler.UserHandlerUpdateEmail)
+	route.Delete("/user/:id", handler.UserHandlerDelete)
+
+	// Book
+	route.Post("/book", handler.BookHandlerCreate)
 }
