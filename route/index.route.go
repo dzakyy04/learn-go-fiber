@@ -4,6 +4,7 @@ import (
 	"learn-go-fiber/config"
 	"learn-go-fiber/handler"
 	"learn-go-fiber/middleware"
+	"learn-go-fiber/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -25,5 +26,5 @@ func RouteInit(route *fiber.App) {
 	route.Delete("/user/:id", handler.UserHandlerDelete)
 
 	// Book
-	route.Post("/book", handler.BookHandlerCreate)
+	route.Post("/book", utils.HandleSingleFile, handler.BookHandlerCreate)
 }

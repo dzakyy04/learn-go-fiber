@@ -5,7 +5,6 @@ import (
 	"learn-go-fiber/database"
 	"learn-go-fiber/model/entity"
 	"learn-go-fiber/model/request"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -33,40 +32,23 @@ func BookHandlerCreate(ctx *fiber.Ctx) error {
 		})
 	}
 
-	// File handler
-	var filename string
-
-	file, errFile := ctx.FormFile("cover")
-	if errFile != nil {
-		if strings.Contains(errFile.Error(), "no uploaded file") {
-			filename = ""
-		} else {
-			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"success": false,
-				"message": "Failed to upload file",
-				"error":   errFile.Error(),
-			})
-		}
+	// Handle require image
+	filename := ctx.Locals("filename")
+	if filename == nil {
+		return ctx.Status(422).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to upload file",
+			"error":   "Cover is required",
+		})
 	}
 
-	if file != nil {
-		filename = file.Filename
-
-		errSaveFile := ctx.SaveFile(file, fmt.Sprintf("./public/cover/%s", filename))
-		if errSaveFile != nil {
-			return ctx.Status(500).JSON(fiber.Map{
-				"success": false,
-				"message": "Failed to save file",
-				"error":   errSaveFile.Error(),
-			})
-		}
-	}
+	filenameString := fmt.Sprintf("%v", filename)
 
 	// Create book
 	newBook := entity.Book{
 		Title:  book.Title,
 		Author: book.Author,
-		Cover:  filename,
+		Cover:  filenameString,
 	}
 
 	errCreateBook := database.DB.Create(&newBook).Error
