@@ -5,7 +5,7 @@ import (
 	"learn-go-fiber/database"
 	"learn-go-fiber/model/entity"
 	"learn-go-fiber/model/request"
-	"log"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -34,14 +34,23 @@ func BookHandlerCreate(ctx *fiber.Ctx) error {
 	}
 
 	// File handler
+	var filename string
+
 	file, errFile := ctx.FormFile("cover")
 	if errFile != nil {
-		log.Println(errFile)
+		if strings.Contains(errFile.Error(), "no uploaded file") {
+			filename = ""
+		} else {
+			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Failed to upload file",
+				"error":   errFile.Error(),
+			})
+		}
 	}
 
-	var filename string
 	if file != nil {
-		filename := file.Filename
+		filename = file.Filename
 
 		errSaveFile := ctx.SaveFile(file, fmt.Sprintf("./public/cover/%s", filename))
 		if errSaveFile != nil {
