@@ -27,4 +27,7 @@ func RouteInit(route *fiber.App) {
 
 	// Book
 	route.Post("/book", utils.HandleSingleFile, handler.BookHandlerCreate)
+
+	// Photo
+	route.Post("/gallery", utils.HandleMultipleFile, handler.PhotoHandlerCreate)
 }
