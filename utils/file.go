@@ -2,10 +2,14 @@ package utils
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+const DefaultPath = "./public/"
 
 func HandleSingleFile(ctx *fiber.Ctx) error {
 	var filename *string
@@ -79,4 +83,22 @@ func HandleMultipleFile(ctx *fiber.Ctx) error {
 
 	ctx.Locals("filenames", filenames)
 	return ctx.Next()
+}
+
+func HandleRemoveFile(filename string, path ...string) error {
+	if len(path) > 0 {
+		err := os.Remove(path[0] + filename)
+		if err != nil {
+			log.Println("Failed to remove file: ", err)
+			return err
+		}
+	} else {
+		err := os.Remove(DefaultPath + filename)
+		if err != nil {
+			log.Println("Failed to remove file: ", err)
+			return err
+		}
+	}
+
+	return nil
 }
